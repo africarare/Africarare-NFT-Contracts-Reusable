@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -60,5 +61,11 @@ contract AfricarareNFT is ERC721, AccessControl {
     ) public view override returns (string memory) {
         require(_exists(tokenId), "Token does not exist");
         return tokenURIs[tokenId];
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC721, AccessControl) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 }
