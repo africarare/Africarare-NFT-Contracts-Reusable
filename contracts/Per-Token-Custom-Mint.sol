@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract AfricarareNFT is ERC721, AccessControl {
+contract PerTokenCustomMint is ERC721, AccessControl {
     bytes32 public constant SUPERADMIN_ROLE = keccak256("SUPERADMIN_ROLE");
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
