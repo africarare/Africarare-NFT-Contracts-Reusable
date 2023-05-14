@@ -13,7 +13,7 @@ describe("PerTokenCustomMintEnforcedRoyalty", () => {
     const PerTokenCustomMintEnforcedRoyalty = await ethers.getContractFactory(
       "PerTokenCustomMintEnforcedRoyalty"
     );
-    [admin, user] = await ethers.getSigners();
+    [superadmin, admin, user] = await ethers.getSigners();
 
     nft = await PerTokenCustomMintEnforcedRoyalty.deploy();
     await nft.deployed();
@@ -22,12 +22,12 @@ describe("PerTokenCustomMintEnforcedRoyalty", () => {
   describe("mint", () => {
     it("should allow superadmin to mint a new token", async () => {
       const tokenURI = "https://example.com/token/1";
-      await nft.connect(admin).mint(tokenURI);
+      await nft.connect(superadmin).mint(tokenURI);
 
       const owner = await nft.ownerOf(0);
       const tokenURIStored = await nft.tokenURI(0);
 
-      expect(owner).to.equal(await admin?.getAddress());
+      expect(owner).to.equal(await superadmin?.getAddress());
       expect(tokenURIStored).to.equal(tokenURI);
     });
 
@@ -42,13 +42,13 @@ describe("PerTokenCustomMintEnforcedRoyalty", () => {
   describe("updateTokenURI", () => {
     beforeEach(async () => {
       const tokenURI = "https://example.com/token/1";
-      await nft.connect(admin).mint(tokenURI);
+      await nft.connect(superadmin).mint(tokenURI);
       tokenId = 0;
     });
 
     it("should allow superadmin to update the token URI", async () => {
       const newTokenURI = "https://example.com/token/updated";
-      await nft.connect(admin).updateTokenURI(tokenId, newTokenURI);
+      await nft.connect(superadmin).updateTokenURI(tokenId, newTokenURI);
 
       const tokenURIStored = await nft.tokenURI(tokenId);
       expect(tokenURIStored).to.equal(newTokenURI);
@@ -56,11 +56,20 @@ describe("PerTokenCustomMintEnforcedRoyalty", () => {
 
     it("should allow admin to update the token URI", async () => {
       const newTokenURI = "https://example.com/token/updated";
-      await nft.connect(admin).setAdmin(await admin?.getAddress()); // Assign admin role to admin address
+      await nft.connect(superadmin).setAdmin(await admin?.getAddress()); // Assign admin role to admin address
       await nft.connect(admin).updateTokenURI(tokenId, newTokenURI);
 
       const tokenURIStored = await nft.tokenURI(tokenId);
       expect(tokenURIStored).to.equal(newTokenURI);
+    });
+
+    it("should not allow revoked admin to update the token URI", async () => {
+      const newTokenURI = "https://example.com/token/updated";
+      await nft.connect(superadmin).setAdmin(await admin?.getAddress()); // Assign admin role to admin address
+      await nft.connect(superadmin).revokeAdmin();
+      await expect(
+        nft.connect(user).updateTokenURI(tokenId, newTokenURI)
+      ).to.be.revertedWith("Caller is not a superadmin or admin");
     });
 
     it("should not allow non-superadmin or non-admin to update the token URI", async () => {
@@ -74,7 +83,7 @@ describe("PerTokenCustomMintEnforcedRoyalty", () => {
       const nonExistentTokenId = 1;
       const newTokenURI = "https://example.com/token/updated";
       await expect(
-        nft.connect(admin).updateTokenURI(nonExistentTokenId, newTokenURI)
+        nft.connect(superadmin).updateTokenURI(nonExistentTokenId, newTokenURI)
       ).to.be.revertedWith("Token does not exist");
     });
   });
