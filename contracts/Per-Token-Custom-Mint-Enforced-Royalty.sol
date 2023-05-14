@@ -19,13 +19,10 @@ contract PerTokenCustomMintEnforcedRoyalty is
 
     mapping(uint256 => string) private tokenURIs;
 
-    address public admin;
-
     constructor() ERC721("Blessing Ngobeni", "BLNG") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(SUPERADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN_ROLE, SUPERADMIN_ROLE);
-        admin = msg.sender;
     }
 
     function setAdmin(address _admin) external {
@@ -34,8 +31,15 @@ contract PerTokenCustomMintEnforcedRoyalty is
             "Caller is not a superadmin"
         );
         require(_admin != address(0), "Invalid address");
-        admin = _admin;
         grantRole(ADMIN_ROLE, _admin);
+    }
+
+    function revokeAdmin() external {
+        require(
+            hasRole(SUPERADMIN_ROLE, msg.sender),
+            "Caller is not a superadmin"
+        );
+        grantRole(ADMIN_ROLE, address(0));
     }
 
     function mint(string memory _tokenURI) external {
