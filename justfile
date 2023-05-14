@@ -59,7 +59,7 @@ start:
 format:
 	@npm run format
 coverage:
-	@hardhat coverage
+	@npx hardhat coverage
 audit:
 	@npm run audit
 print-audit:
